@@ -13,6 +13,45 @@ And a `doctype` is basically a feature of an app. The models, UI and middleware
 needed to handle getting user input, storing it in the db, and reading it back
 to display as a list. 
 
+## Quick start 
+
+```
+$ bench get-app https://github.com/frappe/press --init-bench
+$ cd press-bench
+$ bench new-site --admin-password admin test_site
+$ bench --site test_site install-app press
+$ bench --site test_site add-to-hosts 
+$ bench --site test_site set-config allow_tests true
+$ bench set-config -g developer_mode 1
+$ bench start 
+```
+
+Now once you login (User: Administrator, password: your-db-admin-password) you
+should be able to 
+1. View the press doctypes when you search in the UI/awesomebar for Doctype listings
+2. Call APIs
+```
+$ curl test_site:8000/api/method/press.www.dashboard.get_context_for_dev -X POST 
+{"message":{"frappe_version":"16.0.0-dev","press_frontend_sentry_dsn":"","press_dashboard_sentry_dsn":"","press_frontend_posthog_host":"","press_frontend_posthog_project_id":"","press_site_name":null,"site_name":"test_site","default_team":null,"valid_teams":[],"is_system_user":false,"verify_cards_with_micro_charge":"No","free_credits_inr":"0","free_credits_usd":"0"}}
+```
+3. Update your site's `site_config.json` (in the bench dir, i.e `press-bench/sites/test_site/site-config.json` to `ignore_csrf`
+```
+{
+ "allow_tests": true,
+  ...
+ "ignore_csrf": 1
+}
+
+````
+4. Run the frontend 
+```
+$ cd ~/src/github.com/bprashanth/frappe/press/dashboard
+$ source env/bin/activate
+$ yarn run dev --host test_site
+```
+5. Navigate to `http://test_site:8000/dashboard`
+
+
 ## Prereqs
 
 
@@ -83,6 +122,7 @@ Now you should see this site show up in the `demo_frappe_bench` dir with a `site
 To access this site you will need to edit `/etc/hosts`
 ```
 $ bench --site timor.local add-to-hosts
+$ bench set-config -g developer_mode 1
 $ bench start
 ```
 And navigate to `timor.local:8000` (`bench start` needs to be running for this to work).
@@ -174,6 +214,16 @@ frappecloud.com
 * Frappe [press](https://github.com/frappe/press)
 * Frappe [agent](https://github.com/frappe/agent)
 * Create a site [docs](https://frappeframework.com/docs/user/en/tutorial/create-a-site)
+* Running a test frappe app [docs](https://github.com/frappe/press/blob/master/guide-to-testing.md)
+
+### API calls 
+
+* "Let's setup account page" 
+```
+18:05:56 web.1         | 127.0.0.1 - - [27/Jul/2024 18:05:56] "POST /api/method/press.www.dashboard.get_context_for_dev HTTP/1.1" 417 -
+
+```
+
 
 ### Backups 
 
@@ -205,4 +255,75 @@ pymysql.err.ProgrammingError: (1146, "Table '_3aff04b34e4b30d9.tabDefaultValue' 
 ```
 $ bench --version
 5.22.6
+```
+
+## Logging sites 
+
+```
+18:21:45 web.1         | /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/wrappers/request.py:190: DeprecationWarning: login: Sending `cmd` for RPC calls is deprecated, call REST API instead `/api/method/cmd`
+
+```
+* Callstack for a js -> python request 
+```
+18:29:30 web.1         | (Pdb)   /usr/lib/python3.10/threading.py(973)_bootstrap()
+18:29:30 web.1         | -> self._bootstrap_inner()
+18:29:30 web.1         |   /usr/lib/python3.10/threading.py(1016)_bootstrap_inner()
+18:29:30 web.1         | -> self.run()
+18:29:30 web.1         |   /usr/lib/python3.10/threading.py(953)run()
+18:29:30 web.1         | -> self._target(*self._args, **self._kwargs)
+18:29:30 web.1         |   /usr/lib/python3.10/socketserver.py(683)process_request_thread()
+18:29:30 web.1         | -> self.finish_request(request, client_address)
+18:29:30 web.1         |   /usr/lib/python3.10/socketserver.py(360)finish_request()
+18:29:30 web.1         | -> self.RequestHandlerClass(request, client_address, self)
+18:29:30 web.1         |   /usr/lib/python3.10/socketserver.py(747)__init__()
+18:29:30 web.1         | -> self.handle()
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/serving.py(391)handle()
+18:29:30 web.1         | -> super().handle()
+18:29:30 web.1         |   /usr/lib/python3.10/http/server.py(433)handle()
+18:29:30 web.1         | -> self.handle_one_request()
+18:29:30 web.1         |   /usr/lib/python3.10/http/server.py(421)handle_one_request()
+18:29:30 web.1         | -> method()
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/serving.py(363)run_wsgi()
+18:29:30 web.1         | -> execute(self.server.app)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/serving.py(326)execute()
+18:29:30 web.1         | -> for data in application_iter:
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/debug/__init__.py(341)debug_application()
+18:29:30 web.1         | -> app_iter = self.app(environ, start_response)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/middlewares.py(16)__call__()
+18:29:30 web.1         | -> return super().__call__(environ, start_response)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/middleware/shared_data.py(249)__call__()
+18:29:30 web.1         | -> return self.app(environ, start_response)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/middleware/shared_data.py(249)__call__()
+18:29:30 web.1         | -> return self.app(environ, start_response)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/app.py(79)application()
+18:29:30 web.1         | -> app(environ, start_response),
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/env/lib/python3.10/site-packages/werkzeug/wrappers/request.py(190)application()
+18:29:30 web.1         | -> resp = f(*args[:-2] + (request,))
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/app.py(114)application()
+18:29:30 web.1         | -> response = frappe.api.handle(request)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/api/__init__.py(49)handle()
+18:29:30 web.1         | -> data = endpoint(**arguments)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/api/v1.py(36)handle_rpc_call()
+18:29:30 web.1         | -> return frappe.handler.handle()
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/handler.py(49)handle()
+18:29:30 web.1         | -> data = execute_cmd(cmd)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/handler.py(85)execute_cmd()
+18:29:30 web.1         | -> return frappe.call(method, **frappe.form_dict)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/__init__.py(1814)call()
+18:29:30 web.1         | -> return fn(*args, **newargs)
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/utils/typing_validations.py(32)wrapper()
+18:29:30 web.1         | -> return func(*args, **kwargs)
+18:29:30 web.1         | > /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/desk/page/setup_wizard/setup_wizard.py(329)load_user_details()
+18:29:30 web.1         | -> "full_name": frappe.cache.hget("full_name", "signup"),
+18:29:30 web.1         |   /home/desinotorious/src/github.com/bprashanth/frappe/press/press-bench/apps/frappe/frappe/utils/redis_wrapper.py(211)hget()
+18:29:30 web.1         | -> def hget(self, name, key, generator=None, shared=False):
+
+```
+From logging in handler.py
+```
+18:45:13 web.1         | 127.0.0.1 - - [27/Jul/2024 18:45:13] "GET /api/method/frappe.desk.form.load.getdoc?doctype=Currency&name=INR&_=1722086112605 HTTP/1.1" 200 -
+18:45:29 web.1         | =======================invoking frappe.call 
+18:45:29 web.1         | <function load_user_details at 0x7ac66a7a6ef0>
+18:45:29 web.1         | {'cmd': 'frappe.desk.page.setup_wizard.setup_wizard.load_user_details'}
+18:45:29 web.1         | ========================finished invocation
 ```
