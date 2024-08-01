@@ -43,6 +43,10 @@ $ curl test_site:8000/api/method/press.www.dashboard.get_context_for_dev -X POST
 }
 
 ````
+This can also be done with 
+```
+$ bench --site test_site set-config ignore_csrf 1
+```
 4. Run the frontend 
 ```
 $ cd ~/src/github.com/bprashanth/frappe/press/dashboard
